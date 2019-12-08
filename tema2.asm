@@ -19,16 +19,52 @@ extern get_image_height
 section .data
         use_str db "Use with ./tema2 <task_num> [opt_arg1] [opt_arg2]", 10, 0
         saying db "C'est un proverbe francais.", 0
-        message_len db 27
-  
-section .rodata
-        a db "-.", 0      
+        message_len db 27    
 
 section .bss
     task:       resd 1
     img:        resd 1
     img_width:  resd 1
     img_height: resd 1
+    
+section .rodata
+        a db ".-", 0
+        b db "-...", 0
+        c db "-.-.", 0
+        d db "-..", 0
+        e db ".", 0
+        f db "..-.", 0
+        g db "--.", 0
+        h db "....", 0
+        i db "..", 0
+        j db ".---", 0
+        k db "-.-", 0
+        l db ".-..", 0
+        m db "--", 0
+        n db "-.", 0
+        o db "---", 0
+        p db ".--.", 0
+        q db "--.-", 0
+        r db ".-.", 0
+        s db "...", 0
+        t db "-", 0
+        u db "..-", 0
+        v db "...-", 0
+        w db ".--", 0
+        x db "-..-", 0
+        y db "-.--", 0
+        z db "--..", 0
+        one db ".----", 0
+        two db "..---", 0
+        three db "...--", 0
+        four db "....-", 0
+        five db ".....", 0
+        six db "-....", 0
+        seven db "--...", 0
+        eight db "---..", 0
+        nine db "----.", 0
+        zero db "-----", 0
+        comma db "--..--", 0
 
 section .text
 global main
@@ -261,25 +297,25 @@ while_char_to_write:
     cmp cl, 'Z'
     je write_Z
     cmp cl, '1'
-    je write_1    
+    je write_one 
     cmp cl, '2'
-    je write_2
+    je write_two
     cmp cl, '3'
-    je write_3
+    je write_three
     cmp cl, '4'
-    je write_4
+    je write_four
     cmp cl, '5'
-    je write_5
+    je write_five
     cmp cl, '6'
-    je write_6
+    je write_six
     cmp cl, '7'
-    je write_7
+    je write_seven
     cmp cl, '8'
-    je write_8
+    je write_eight
     cmp cl, '9'
-    je write_9
+    je write_nine
     cmp cl, '0'
-    je write_0
+    je write_zero
     cmp cl, ','
     je write_comma
     cmp cl, 0
@@ -395,6 +431,235 @@ verify_revient:
 leave_verify:
     leave
     ret
+    
+write_A:
+    push a
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_B:
+    push b
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_C:
+    push c
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_D:
+    push d
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_E:
+    push e
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_F:
+    push f
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_G:
+    push g
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_H:
+    push h
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_I:
+    push i
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_J:
+    push j
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_K:
+    push k
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_L:
+    push l
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_M:
+    push m
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_N:
+    push n
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_O:
+    push o
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_P:
+    push p
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_Q:
+    push q
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_R:
+    push r
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_S:
+    push s
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_T:
+    push t
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_U:
+    push u
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_V:
+    push v
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_W:
+    push w
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_X:
+    push x
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_Y:
+    push y
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_Z:
+    push z
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_zero:
+    push zero
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_one:
+    push one
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_two:
+    push two
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_three:
+    push three
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_four:
+    push four
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_five:
+    push five
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_six:
+    push six
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_seven:
+    push seven
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_eight:
+    push eight
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_nine:
+    push nine
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+write_comma:
+    push comma
+    call encrypt_character
+    add esp, 4
+    jmp after_writing
+    
+encrypt_character:
+    push ebp
+    mov ebp, esp
+    leave
+    ret
+    
     ; Free the memory allocated for the image.
 done:
     push DWORD[img]
