@@ -17,7 +17,10 @@ extern get_image_width
 extern get_image_height
 
 section .data
-	use_str db "Use with ./tema2 <task_num> [opt_arg1] [opt_arg2]", 10, 0
+        use_str db "Use with ./tema2 <task_num> [opt_arg1] [opt_arg2]", 10, 0
+        saying db "C'est un proverbe francais.", 0
+        message_len db 27
+        
 
 section .bss
     task:       resd 1
@@ -88,70 +91,6 @@ solve_task1:
     push eax
     call bruteforce_singlebyte_xor
     add esp, 4
-    jmp done
-solve_task2:
-    ; TODO Task2
-    jmp done
-solve_task3:
-    ; TODO Task3
-    jmp done
-solve_task4:
-    ; TODO Task4
-    jmp done
-solve_task5:
-    ; TODO Task5
-    jmp done
-solve_task6:
-    ; TODO Task6
-    jmp done
-
-bruteforce_singlebyte_xor:
-    push ebp
-    mov ebp, esp
-    mov edi, [ebp + 8]
-    mov eax, [img_width]
-    ;PRINT_DEC 4, eax
-    ;PRINT_STRING " "
-    mov eax, [img_height]
-    ;PRINT_DEC 4, eax
-    push edi
-    xor eax, eax
-    mov al, 1
-while_key:
-    pop edi
-    push edi
-    mov ecx, 0
-while_line:
-        mov edx, 0
-        push edi
-while_column:
-            xor byte[edi], al
-            movzx esi, byte[edi]
-            xor byte[edi], al
-            cmp esi, 'r'
-            push edi
-            call verify_revient
-            pop edi
-            cmp edx, -1
-            je end_while_key
-            cmp edx, [img_width]
-            je end_while_column
-            add edi, 4
-            inc edx
-            jmp while_column
-end_while_column:
-        add esp, 4
-        cmp ecx, [img_height]
-        je end_while_line
-        inc ecx
-        jmp while_line
-end_while_line:
-    cmp al, 0xFF
-    je end_while_key
-    inc al
-    jmp while_key
-end_while_key:
-    pop edi
 while_print_message:
     xor byte [edi], al
     movzx esi, byte [edi]
@@ -166,6 +105,154 @@ end_while_print_message:
     PRINT_DEC 1, al
     NEWLINE
     PRINT_DEC 4, ecx
+    jmp done
+    
+solve_task2:
+    mov eax, [img]
+    push eax
+    call bruteforce_singlebyte_xor
+    add esp, 4
+    mov edi, [img]
+    push ecx
+    mov ecx, 0
+    ;decrypt
+while_line2:
+        cmp ecx, [img_height]
+        je end_while_line2
+        mov edx, 0
+while_column2:
+            cmp edx, [img_width]
+            je end_while_column2
+            ;PRINT_DEC 4, edx
+            ;PRINT_STRING " "
+            xor byte[edi], al
+            movzx esi, byte[edi]
+            ;PRINT_CHAR esi
+            add edi, 4
+            inc edx
+            jmp while_column2
+end_while_column2:
+        inc ecx
+        jmp while_line2
+end_while_line2:
+    ;calc index of my message
+    pop ecx
+    inc ecx
+    push eax
+    mov eax, [img_width]
+    mul ecx
+    mov edx,eax
+    pop eax
+    ;write message
+    mov edi, [img]
+    ;PRINT_CHAR edi
+    mov bl, byte [saying]
+    mov ecx, 0
+while_write:
+    mov  byte [edi + edx * 4], bl
+    cmp ecx, [message_len]
+    je end_while_write
+    inc ecx
+    mov bl, byte [saying + ecx]
+    inc edx
+    jmp while_write
+end_while_write:
+    
+    ;calc new key
+    mov cl, 2
+    mul cl
+    add ax, 3
+    mov cl, 5
+    div cl
+    sub al, 4
+    ;PRINT_DEC 1, al
+    mov edi, [img]
+    mov ecx, 1
+    ;encrypt
+while_line2_1:
+        mov edx, 1
+        cmp ecx, [img_height]
+        je end_while_line2_1
+while_column2_1:
+            cmp edx, [img_width]
+            je end_while_column2_1
+            ;PRINT_DEC 4, edx
+            ;PRINT_STRING " "
+            movzx esi, byte[edi]
+            ;PRINT_CHAR esi
+            xor byte[edi], al
+            add edi, 4
+            inc edx
+            jmp while_column2_1
+end_while_column2_1:
+        inc ecx
+        jmp while_line2_1
+end_while_line2_1:
+    push dword [img_height]
+    push dword [img_width]
+    push dword [img]
+    call print_image
+    add esp, 12
+    jmp done
+    
+solve_task3:
+    ; TODO Task3
+    jmp done
+    
+solve_task4:
+    ; TODO Task4
+    jmp done
+    
+solve_task5:
+    ; TODO Task5
+    jmp done
+    
+solve_task6:
+    ; TODO Task6
+    jmp done
+
+bruteforce_singlebyte_xor:
+    push ebp
+    mov ebp, esp
+    mov edi, [ebp + 8]
+    push edi
+    xor eax, eax
+    mov al, 1
+while_key:
+    pop edi
+    push edi
+    mov ecx, 0
+while_line:
+        cmp ecx, [img_height]
+        je end_while_line
+        mov edx, 0
+        push edi
+while_column:
+            cmp edx, [img_width]
+            je end_while_column
+            xor byte[edi], al
+            movzx esi, byte[edi]
+            xor byte[edi], al
+            cmp esi, 'r'
+            push edi
+            call verify_revient
+            pop edi
+            cmp edx, -1
+            je end_while_key
+            add edi, 4
+            inc edx
+            jmp while_column
+end_while_column:
+        add esp, 4
+        inc ecx
+        jmp while_line
+end_while_line:
+    cmp al, 0xFF
+    je end_while_key
+    inc al
+    jmp while_key
+end_while_key:
+    pop edi
     leave
     ret
     
