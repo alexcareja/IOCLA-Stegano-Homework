@@ -129,6 +129,7 @@ solve_task1:
     push eax
     call bruteforce_singlebyte_xor
     add esp, 4
+    ;print the message
 while_print_message:
     xor byte [edi], al
     movzx esi, byte [edi]
@@ -139,6 +140,7 @@ while_print_message:
     add edi, 4
     jmp while_print_message
 end_while_print_message:
+    ;print key and row
     NEWLINE
     PRINT_DEC 1, al
     NEWLINE
@@ -148,12 +150,13 @@ end_while_print_message:
 solve_task2:
     mov eax, [img]
     push eax
+    ;get old_key and row
     call bruteforce_singlebyte_xor
     add esp, 4
     mov edi, [img]
     push ecx
     mov ecx, 0
-    ;decrypt
+    ;decrypt image
 while_line2:
         cmp ecx, [img_height]
         je end_while_line2
@@ -161,11 +164,8 @@ while_line2:
 while_column2:
             cmp edx, [img_width]
             je end_while_column2
-            ;PRINT_DEC 4, edx
-            ;PRINT_STRING " "
             xor byte[edi], al
             movzx esi, byte[edi]
-            ;PRINT_CHAR esi
             add edi, 4
             inc edx
             jmp while_column2
@@ -183,7 +183,6 @@ end_while_line2:
     pop eax
     ;write message
     mov edi, [img]
-    ;PRINT_CHAR edi
     mov bl, byte [saying]
     mov ecx, 0
 while_write:
@@ -195,7 +194,6 @@ while_write:
     inc edx
     jmp while_write
 end_while_write:
-    
     ;calc new key
     mov cl, 2
     mul cl
@@ -203,7 +201,6 @@ end_while_write:
     mov cl, 5
     div cl
     sub al, 4
-    ;PRINT_DEC 1, al
     mov edi, [img]
     mov ecx, 0
     ;encrypt
@@ -214,10 +211,7 @@ while_line2_1:
 while_column2_1:
             cmp edx, [img_width]
             je end_while_column2_1
-            ;PRINT_DEC 4, edx
-            ;PRINT_STRING " "
             movzx esi, byte[edi]
-            ;PRINT_CHAR esi
             xor byte[edi], al
             add edi, 4
             inc edx
@@ -226,6 +220,7 @@ end_while_column2_1:
         inc ecx
         jmp while_line2_1
 end_while_line2_1:
+    ;print result
     push dword [img_height]
     push dword [img_width]
     push dword [img]
@@ -236,14 +231,16 @@ end_while_line2_1:
 solve_task3:
     mov ebx, [ebp + 12]
     push DWORD[ebx + 16]
+    ;get index
     call atoi
     add esp, 4
-    PRINT_DEC 4, eax
     mov edx, [ebp + 12]
     mov ebx, [edx + 12]
     mov edi, [img]
+    ;iterate string
 while_char_to_write:
     mov cl, byte [ebx]
+    ;switch character
     cmp cl, 'A'
     je write_A
     cmp cl, 'B'
@@ -318,16 +315,25 @@ while_char_to_write:
     je write_zero
     cmp cl, ','
     je write_comma
-    cmp cl, 0
-    je end_while_char_to_write
+    ;if none of the above, then leave loop
+    jmp end_while_char_to_write
 after_writing:
+    ;adding a space after every letter
     mov byte [edi + eax * 4], ' '
+    ;increment both iterators for string and img
     inc eax
     inc ebx
     jmp while_char_to_write
 end_while_char_to_write:
-    mov cl, byte [ebx]
-    PRINT_CHAR cl
+    ;overwrite last space with the null terminator
+    dec eax
+    mov byte [edi + eax * 4], 0
+    ;print result
+    push dword [img_height]
+    push dword [img_width]
+    push dword [img]
+    call print_image
+    add esp, 12
     jmp done
     
 solve_task4:
@@ -349,10 +355,12 @@ bruteforce_singlebyte_xor:
     push edi
     xor eax, eax
     mov al, 1
+    ;iterate through all possible keys until finding "revient"
 while_key:
     pop edi
     push edi
     mov ecx, 0
+    ;iterate through all pixels of the image
 while_line:
         cmp ecx, [img_height]
         je end_while_line
@@ -392,6 +400,7 @@ verify_revient:
     mov ebp, esp
     mov edi, [ebp + 8]
     add edi, 4
+    ;check if next letters after 'r' are 'evient'
     xor byte [edi], al
     movzx esi, byte [edi]
     xor byte [edi], al
@@ -657,6 +666,17 @@ write_comma:
 encrypt_character:
     push ebp
     mov ebp, esp
+    mov esi, [ebp + 8]
+    ;write morse the code given as parameter to the image
+while_encrypt:
+    mov dl, byte[esi]
+    cmp dl, 0
+    je leave_encrypt_character
+    mov byte [edi + eax * 4], dl
+    inc eax
+    inc esi
+    jmp while_encrypt
+leave_encrypt_character:
     leave
     ret
     
