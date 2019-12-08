@@ -115,6 +115,7 @@ bruteforce_singlebyte_xor:
     mov eax, [img_height]
     ;PRINT_DEC 4, eax
     push edi
+    xor eax, eax
     mov al, 1
 while_key:
     pop edi
