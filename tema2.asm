@@ -20,7 +20,9 @@ section .data
         use_str db "Use with ./tema2 <task_num> [opt_arg1] [opt_arg2]", 10, 0
         saying db "C'est un proverbe francais.", 0
         message_len db 27
-        
+  
+section .rodata
+        a db "-.", 0      
 
 section .bss
     task:       resd 1
@@ -167,10 +169,10 @@ end_while_write:
     sub al, 4
     ;PRINT_DEC 1, al
     mov edi, [img]
-    mov ecx, 1
+    mov ecx, 0
     ;encrypt
 while_line2_1:
-        mov edx, 1
+        mov edx, 0
         cmp ecx, [img_height]
         je end_while_line2_1
 while_column2_1:
@@ -196,11 +198,104 @@ end_while_line2_1:
     jmp done
     
 solve_task3:
-    ; TODO Task3
+    mov ebx, [ebp + 12]
+    push DWORD[ebx + 16]
+    call atoi
+    add esp, 4
+    PRINT_DEC 4, eax
+    mov edx, [ebp + 12]
+    mov ebx, [edx + 12]
+    mov edi, [img]
+while_char_to_write:
+    mov cl, byte [ebx]
+    cmp cl, 'A'
+    je write_A
+    cmp cl, 'B'
+    je write_B
+    cmp cl, 'C'
+    je write_C
+    cmp cl, 'D'
+    je write_D
+    cmp cl, 'E'
+    je write_E
+    cmp cl, 'F'
+    je write_F
+    cmp cl, 'G'
+    je write_G
+    cmp cl, 'H'
+    je write_H
+    cmp cl, 'I'
+    je write_I
+    cmp cl, 'J'
+    je write_J
+    cmp cl, 'K'
+    je write_K
+    cmp cl, 'L'
+    je write_L
+    cmp cl, 'M'
+    je write_M
+    cmp cl, 'N'
+    je write_N
+    cmp cl, 'O'
+    je write_O
+    cmp cl, 'P'
+    je write_P
+    cmp cl, 'Q'
+    je write_Q
+    cmp cl, 'R'
+    je write_R
+    cmp cl, 'S'
+    je write_S
+    cmp cl, 'T'
+    je write_T
+    cmp cl, 'U'
+    je write_U
+    cmp cl, 'V'
+    je write_V
+    cmp cl, 'W'
+    je write_W
+    cmp cl, 'X'
+    je write_X
+    cmp cl, 'Y'
+    je write_Y
+    cmp cl, 'Z'
+    je write_Z
+    cmp cl, '1'
+    je write_1    
+    cmp cl, '2'
+    je write_2
+    cmp cl, '3'
+    je write_3
+    cmp cl, '4'
+    je write_4
+    cmp cl, '5'
+    je write_5
+    cmp cl, '6'
+    je write_6
+    cmp cl, '7'
+    je write_7
+    cmp cl, '8'
+    je write_8
+    cmp cl, '9'
+    je write_9
+    cmp cl, '0'
+    je write_0
+    cmp cl, ','
+    je write_comma
+    cmp cl, 0
+    je end_while_char_to_write
+after_writing:
+    mov byte [edi + eax * 4], ' '
+    inc eax
+    inc ebx
+    jmp while_char_to_write
+end_while_char_to_write:
+    mov cl, byte [ebx]
+    PRINT_CHAR cl
     jmp done
     
 solve_task4:
-    ; TODO Task4
+    
     jmp done
     
 solve_task5:
