@@ -747,6 +747,7 @@ end_while_chars_in_esi:
     leave
     ret
     
+    ;encrypts one byte as 8 bytes in the immage
 write_byte:
     push ebp
     mov ebp, esp
@@ -784,6 +785,7 @@ end_while_cl_not_8:
     leave
     ret
     
+    ;decrypts eight bytes into one byte (result in al)
 decrypt_byte:
     push ebp
     mov ebp, esp
@@ -791,8 +793,8 @@ decrypt_byte:
     xor al, al
     ;for each byte get the lsb and add it to al
 while_not_8_bits:
-    cmp cl, 8
-    je end_while_not_8_bits
+    ;shift al left to make space for the next bit
+    shl al, 1
     mov dl, byte[esi]
     add esi, 4
     ;get only the lsb
@@ -800,13 +802,9 @@ while_not_8_bits:
     shr dl, 7
     ;add lsb to al
     add al, dl
-    ;shift al left to make space for the next bit
-    shl al, 1
     inc cl
-    jmp while_not_8_bits
-end_while_not_8_bits:
-    ;shift al right to cancel the last shl
-    shr al, 1
+    cmp cl, 8
+    jl while_not_8_bits
     leave
     ret
     
