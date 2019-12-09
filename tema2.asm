@@ -383,7 +383,95 @@ end_while_bytes_to_decrypt:
     jmp done
     
 solve_task6:
-    ; TODO Task6
+    mov esi, [img]
+    mov ecx, 1
+while_line_in_img:
+    mov eax, [img_width]
+    mul ecx
+    push ecx
+    mov ecx, 4
+    mul ecx
+    pop ecx
+    mov esi, [img]
+    add esi, eax
+    add esi, 4
+    mov eax, [img_height]
+    dec eax
+    cmp ecx, eax
+    je after_while_line_in_img
+    mov edx, 2
+while_column_in_img:
+    mov al, byte [esi]
+    movzx ax, al
+    push edx
+    mov edx, [img_width]
+    mov bl, byte [esi + edx * 4]
+    movzx bx, bl
+    add ax, bx
+    neg edx
+    mov bl, byte [esi + edx * 4]
+    movzx bx, bl
+    add ax, bx
+    mov bl, byte [esi - 4]
+    movzx bx, bl
+    add ax, bx
+    mov bl, byte [esi + 4]
+    movzx bx, bl
+    add ax, bx
+    mov bl, 5
+    div bl
+    ;PRINT_UDEC 1, al
+    ;PRINT_STRING " "
+    add esi, 4
+    pop edx
+    inc edx
+    push eax
+    cmp edx, [img_width]
+    jl while_column_in_img
+    ;NEWLINE
+    inc ecx
+    jmp while_line_in_img
+after_while_line_in_img:
+
+    ;write results from stack to img
+    mov ecx, [img_height]
+    sub ecx, 2
+while_line_in_img_2:
+    mov eax, [img_width]
+    mul ecx
+    push ecx
+    mov ecx, 4
+    mul ecx
+    pop ecx
+    mov esi, [img]
+    add esi, eax    ;get to current line
+    mov ebx, [img_width]
+    mov eax, 4
+    mul ebx
+    add esi, eax    ;get to the first pixel from next line
+    sub esi, 8      ;get to second last pixel from current line
+    cmp ecx, 0
+    je after_while_line_in_img_2
+    mov edx, 2
+while_column_in_img_2:
+    pop eax
+    mov byte [esi], al
+    ;PRINT_UDEC 1, al
+    sub esi, 4
+    inc edx
+    mov ebx, [img_width]
+    cmp edx, ebx
+    jl while_column_in_img_2
+    ;NEWLINE
+    dec ecx
+    jmp while_line_in_img_2
+after_while_line_in_img_2:
+    ;print result
+    push dword [img_height]
+    push dword [img_width]
+    push dword [img]
+    call print_image
+    add esp, 12
     jmp done
 
 bruteforce_singlebyte_xor:
