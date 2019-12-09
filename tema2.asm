@@ -26,6 +26,7 @@ section .bss
     img:        resd 1
     img_width:  resd 1
     img_height: resd 1
+    lsb_string: resd 1
     
 section .rodata
         a db ".-", 0
@@ -234,6 +235,7 @@ solve_task3:
     ;get index
     call atoi
     add esp, 4
+    ;get message
     mov edx, [ebp + 12]
     mov ebx, [edx + 12]
     mov edi, [img]
@@ -337,11 +339,47 @@ end_while_char_to_write:
     jmp done
     
 solve_task4:
-    
+    mov ebx, [ebp + 12]
+    push DWORD[ebx + 16]
+    ;get index
+    call atoi
+    add esp, 4
+    ;get message
+    mov edx, [ebp + 12]
+    mov ebx, [edx + 12]
+    push eax
+    push ebx
+    push dword [img]
+    call lsb_encode
+    add esp, 12
+    ;print result
+    push dword [img_height]
+    push dword [img_width]
+    push dword [img]
+    call print_image
+    add esp, 12
     jmp done
     
 solve_task5:
-    ; TODO Task5
+    mov ebx, [ebp + 12]
+    push DWORD[ebx + 12]
+    ;get index
+    call atoi
+    add esp, 4
+    ;get to index
+    mov esi, [img]
+    mov ebx, 4
+    mul ebx
+    add esi, eax
+    sub esi, 4
+    ;while not found '\0'
+while_bytes_to_decrypt:
+    call decrypt_byte
+    cmp al, 0   ;if \0 is found then break
+    je end_while_bytes_to_decrypt
+    PRINT_CHAR al
+    jmp while_bytes_to_decrypt
+end_while_bytes_to_decrypt:
     jmp done
     
 solve_task6:
@@ -677,6 +715,98 @@ while_encrypt:
     inc esi
     jmp while_encrypt
 leave_encrypt_character:
+    leave
+    ret
+    
+lsb_encode:
+    push ebp
+    mov ebp, esp
+    ;get img
+    mov edi, [ebp + 8]
+    ;get message
+    mov esi, [ebp + 12]
+    ;get index
+    mov ecx, [ebp + 16]
+    ;get edi to index
+    mov eax, 4
+    mul ecx
+    add edi, eax
+    sub edi, 4
+    ;write each character to the image
+while_chars_in_esi:
+    ;get byte value of current char
+    mov al, byte[esi]
+    ;write current char in LSB encryption
+    call write_byte
+    ;if current byte was \0 then leave loop
+    cmp byte [esi], 0
+    je end_while_chars_in_esi
+    inc esi
+    jmp while_chars_in_esi
+end_while_chars_in_esi:
+    leave
+    ret
+    
+write_byte:
+    push ebp
+    mov ebp, esp
+    mov cl, 0
+    push eax
+while_cl_not_8:
+    pop eax
+    push eax
+    cmp cl, 8
+    je end_while_cl_not_8
+    ;get the current bye in lsb position
+    mov bl, byte[esi]
+    mov dl, al
+    shl dl, cl
+    shr dl, 7
+    ;get img pixel
+    mov al, byte[edi]
+    cmp dl, 0
+    jg dl_one
+    ;dl is 0
+    mov dl, 0xFE
+    and al, dl
+    jmp after_dl_one
+dl_one:
+    ;dl is 1
+    mov dl, 1
+    or al, dl
+after_dl_one:
+    ;move result in img
+    mov byte [edi], al
+    add edi, 4
+    inc cl
+    jmp while_cl_not_8
+end_while_cl_not_8:
+    leave
+    ret
+    
+decrypt_byte:
+    push ebp
+    mov ebp, esp
+    mov cl, 0
+    xor al, al
+    ;for each byte get the lsb and add it to al
+while_not_8_bits:
+    cmp cl, 8
+    je end_while_not_8_bits
+    mov dl, byte[esi]
+    add esi, 4
+    ;get only the lsb
+    shl dl, 7
+    shr dl, 7
+    ;add lsb to al
+    add al, dl
+    ;shift al left to make space for the next bit
+    shl al, 1
+    inc cl
+    jmp while_not_8_bits
+end_while_not_8_bits:
+    ;shift al right to cancel the last shl
+    shr al, 1
     leave
     ret
     
