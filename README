@@ -5,31 +5,31 @@
 Student: Careja Alexandru-Cristian
 Grupa: 324CD
 
-<> Task 1 - liniile 128 - 244
+<> Task 1 - liniile 128 - 220
 ---------
-	Apelez functia bruteforce_singlebyte_xor in care, intr-un loop incrementez
+    Apelez functia bruteforce_singlebyte_xor in care, intr-un loop incrementez
 cheia cu care incerc sa decodez mesajul (cheia ia valori intre 1 si 255). In
 acest loop parcurg matricea (folosind alte 2 loop-uri implementate de mine),
 xorez fiecare byte si caut caracterul 'r'. Daca nu gasesc 'r', atunci xorez
 inapoi imaginea. Daca gasesc caracterul 'r' atunci apelez o functie care veri-
 fica daca urmatoarele caractere de dupa 'r' sunt 'evient'. Daca nu gaseste
 'evient', atunci continua procesul de cautare. Daca a gasit revient, atunci da
-un semnal (il face pe edx -1) si iese din loopuri returnan in al cheia si in 
+un semnal (il face pe edx -1) si iese din loopuri returnand in al cheia si in 
 ecx linia la care a gasit mesajul. Parcurge matricea xorata incepand de la
 linia returnata mai devreme si afiseaza fiecare caracer pana la intalnirea null
 terminator. Apoi afiseaza cheia si linia.
 
-<> Task 2 - liniile 246 - 319
+<> Task 2 - liniile 222 - 295
 ---------
-	Folosind functia de la Task 1, bruteforce_singlebyte_xor, fac rost de cheia
+    Folosind functia de la Task 1, bruteforce_singlebyte_xor, fac rost de cheia
 veche si de linia la care se gaseste mesajul. Incrementez linia si pornesc sa
 scriu mesajul nou la linia urmatoare celei cu mesajul initial pana la termina-
 rea mesajului(\0). Calculez cheia noua dupa formula data si xorez toti octetii
 din imagine (mai putin cei de offset).
 
-<> Task 3 - liniile 321 - 662
+<> Task 3 - liniile 297 - 638
 ---------
-	In sectiunea read only data am declarat codul morse al fiecarui caracter
+    In sectiunea read only data am declarat codul morse al fiecarui caracter
 folosit de noi ca string. Indexul la care trebuie scris mesajul il convertesc
 folosind functia atoi. Pentru fiecare caracter din mesaj, se realizeaza un fel
 de switch, adica, compar caracterul cu fiecare caracter posibil si daca este
@@ -41,18 +41,18 @@ adaug automat un spatiu in loop. De asemenea, spatiul acesta se va adauga si
 dupa ultimul caracter, dar va fi suprascris de null terminator la iesirea din
 bucla.
 
-<> Task 4 - liniile 664 - 746
+<> Task 4 - liniile 640 - 722
 ---------
-	Indexul la care trebuie scris mesajul il convertesc folosind functia atoi.
+    Indexul la care trebuie scris mesajul il convertesc folosind functia atoi.
 Pushez parametrii functiei lsb_encode si o apelez. In functia lsb_encode, 
 pentru fiecare caracter din textul dat, apelez functia void write_byte() care
 ia fiecare bit din caracterul dat incepand de la MSB la LSB si il pune pe fie-
 care in parte, drept LSB pentru 8 octeti consescutivi din imagine. Functia
 lsb_encode se termina atunci cand s-a scris caracterul '\0'.
 
-<> Task 5 - liniile 748 - 791
+<> Task 5 - liniile 724 - 767
 ---------
-	Indexul de la care trebuie descoperit mesajul il convertesc folosind
+    Indexul de la care trebuie descoperit mesajul il convertesc folosind
 functia atoi. Intr-o bucla apelez functia implementata de mine void
 decrypt_byte() care decripteaza 8 octeti din imagine luand LSB ul fiecaruia si
 adaugandul intr-un registru de 8 biti (si shiftand dupa fiecare adaugare a unui
@@ -61,9 +61,9 @@ se intoarce in bucla si verific daca ultimul caracter decriptat este null
 terminator. Daca este atunci ies din bucla; daca nu, atunci il afisez si conti-
 nui sa decriptez caractere.
 
-<> Task 6 - liniile 793 - 873
+<> Task 6 - liniile 769 - 849
 ---------
-	Intr-o bucla care merge de la 1 pana la inaltimea imaginii - 1, calculez
+    Intr-o bucla care merge de la 1 pana la inaltimea imaginii - 1, calculez
 adresa elementului 1 de pe linia curenta (elementul 1 fiind al doilea element),
 si intru intr-o a doua bucla prin care se itereaza de img_width - 2 ori si in
 care se calculeaza media aritmetica a celor 5 pixeli. Media aritmetica o pun pe

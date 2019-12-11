@@ -18,6 +18,7 @@ extern get_image_height
 
 section .data
         use_str db "Use with ./tema2 <task_num> [opt_arg1] [opt_arg2]", 10, 0
+        evient db "evient", 0
         saying db "C'est un proverbe francais.", 0
         message_len db 27    
 
@@ -148,6 +149,76 @@ end_while_print_message:
     PRINT_DEC 4, ecx
     jmp done
     
+    bruteforce_singlebyte_xor:
+    push ebp
+    mov ebp, esp
+    mov edi, [ebp + 8]
+    push edi
+    xor eax, eax
+    mov al, 1   ;al = 0 : 255 (unsigned decimal)
+    ;iterate through all possible keys until finding "revient"
+while_key:
+    pop edi
+    push edi
+    mov ecx, 0  ;ecx = 0 : img_height - 1
+    ;iterate through all pixels of the image
+while_line:
+        cmp ecx, [img_height]
+        je end_while_line
+        mov edx, 0  ;edx = 0 : img_width - 1
+        push edi
+while_column:
+            cmp edx, [img_width]
+            je end_while_column
+            xor byte [edi], al
+            movzx esi, byte [edi]
+            xor byte [edi], al
+            cmp esi, 'r'    ;look for a letter 'r'
+            jne r_not_found
+            push edi
+            call verify_revient
+            pop edi
+            cmp edx, -1
+            je end_while_key
+r_not_found:
+            add edi, 4
+            inc edx
+            jmp while_column
+end_while_column:
+        add esp, 4
+        inc ecx
+        jmp while_line
+end_while_line:
+    cmp al, 0xFF
+    je end_while_key
+    inc al
+    jmp while_key
+end_while_key:
+    pop edi
+    leave
+    ret
+    
+verify_revient:
+    push ebp
+    mov ebp, esp
+    mov edi, [ebp + 8]
+    add edi, 4
+    ;check if next letters after 'r' are 'evient'
+    mov esi, evient
+while_chars_in_evient:
+    mov bl, byte [edi]
+    xor bl, al
+    cmp bl, byte [esi]
+    jne leave_verify
+    add edi, 4
+    inc esi
+    cmp byte [esi], 0
+    jne while_chars_in_evient
+    mov edx, -1
+leave_verify:
+    leave
+    ret
+    
 solve_task2:
     mov eax, [img]
     push eax
@@ -156,17 +227,17 @@ solve_task2:
     add esp, 4
     mov edi, [img]
     push ecx
-    mov ecx, 0
+    mov ecx, 0  ;ecx = 0 : img_height - 1
     ;decrypt image
 while_line2:
         cmp ecx, [img_height]
         je end_while_line2
-        mov edx, 0
+        mov edx, 0  ;edx = 0 : img_width - 1
 while_column2:
             cmp edx, [img_width]
             je end_while_column2
-            xor byte[edi], al
-            movzx esi, byte[edi]
+            xor byte [edi], al
+            movzx esi, byte [edi]
             add edi, 4
             inc edx
             jmp while_column2
@@ -185,7 +256,7 @@ end_while_line2:
     ;write message
     mov edi, [img]
     mov bl, byte [saying]
-    mov ecx, 0
+    mov ecx, 0  ;ecx = 0 : message_len - 1
 while_write:
     mov  byte [edi + edx * 4], bl
     cmp ecx, [message_len]
@@ -203,17 +274,17 @@ end_while_write:
     div cl
     sub al, 4
     mov edi, [img]
-    mov ecx, 0
+    mov ecx, 0  ;ecx = 0 : img_height - 1
     ;encrypt
 while_line2_1:
-        mov edx, 0
+        mov edx, 0  ;edx = 0 : imd_width - 1
         cmp ecx, [img_height]
         je end_while_line2_1
 while_column2_1:
             cmp edx, [img_width]
             je end_while_column2_1
-            movzx esi, byte[edi]
-            xor byte[edi], al
+            movzx esi, byte [edi]
+            xor byte [edi], al
             add edi, 4
             inc edx
             jmp while_column2_1
@@ -221,13 +292,7 @@ end_while_column2_1:
         inc ecx
         jmp while_line2_1
 end_while_line2_1:
-    ;print result
-    push dword [img_height]
-    push dword [img_width]
-    push dword [img]
-    call print_image
-    add esp, 12
-    jmp done
+    jmp print_result
     
 solve_task3:
     mov ebx, [ebp + 12]
@@ -330,242 +395,7 @@ end_while_char_to_write:
     ;overwrite last space with the null terminator
     dec eax
     mov byte [edi + eax * 4], 0
-    ;print result
-    push dword [img_height]
-    push dword [img_width]
-    push dword [img]
-    call print_image
-    add esp, 12
-    jmp done
-    
-solve_task4:
-    mov ebx, [ebp + 12]
-    push DWORD[ebx + 16]
-    ;get index
-    call atoi
-    add esp, 4
-    ;get message
-    mov edx, [ebp + 12]
-    mov ebx, [edx + 12]
-    push eax
-    push ebx
-    push dword [img]
-    call lsb_encode
-    add esp, 12
-    ;print result
-    push dword [img_height]
-    push dword [img_width]
-    push dword [img]
-    call print_image
-    add esp, 12
-    jmp done
-    
-solve_task5:
-    mov ebx, [ebp + 12]
-    push DWORD[ebx + 12]
-    ;get index
-    call atoi
-    add esp, 4
-    ;get to index
-    mov esi, [img]
-    mov ebx, 4
-    mul ebx
-    add esi, eax
-    sub esi, 4
-    ;while not found '\0'
-while_bytes_to_decrypt:
-    call decrypt_byte
-    cmp al, 0   ;if \0 is found then break
-    je end_while_bytes_to_decrypt
-    PRINT_CHAR al
-    jmp while_bytes_to_decrypt
-end_while_bytes_to_decrypt:
-    jmp done
-    
-solve_task6:
-    mov esi, [img]
-    mov ecx, 1
-while_line_in_img:
-    mov eax, [img_width]
-    mul ecx
-    push ecx
-    mov ecx, 4
-    mul ecx
-    pop ecx
-    mov esi, [img]
-    add esi, eax
-    add esi, 4
-    mov eax, [img_height]
-    dec eax
-    cmp ecx, eax
-    je after_while_line_in_img
-    mov edx, 2
-while_column_in_img:
-    mov al, byte [esi]
-    movzx ax, al
-    push edx
-    mov edx, [img_width]
-    mov bl, byte [esi + edx * 4]
-    movzx bx, bl
-    add ax, bx
-    neg edx
-    mov bl, byte [esi + edx * 4]
-    movzx bx, bl
-    add ax, bx
-    mov bl, byte [esi - 4]
-    movzx bx, bl
-    add ax, bx
-    mov bl, byte [esi + 4]
-    movzx bx, bl
-    add ax, bx
-    mov bl, 5
-    div bl
-    ;PRINT_UDEC 1, al
-    ;PRINT_STRING " "
-    add esi, 4
-    pop edx
-    inc edx
-    push eax
-    cmp edx, [img_width]
-    jl while_column_in_img
-    ;NEWLINE
-    inc ecx
-    jmp while_line_in_img
-after_while_line_in_img:
-
-    ;write results from stack to img
-    mov ecx, [img_height]
-    sub ecx, 2
-while_line_in_img_2:
-    mov eax, [img_width]
-    mul ecx
-    push ecx
-    mov ecx, 4
-    mul ecx
-    pop ecx
-    mov esi, [img]
-    add esi, eax    ;get to current line
-    mov ebx, [img_width]
-    mov eax, 4
-    mul ebx
-    add esi, eax    ;get to the first pixel from next line
-    sub esi, 8      ;get to second last pixel from current line
-    cmp ecx, 0
-    je after_while_line_in_img_2
-    mov edx, 2
-while_column_in_img_2:
-    pop eax
-    mov byte [esi], al
-    ;PRINT_UDEC 1, al
-    sub esi, 4
-    inc edx
-    mov ebx, [img_width]
-    cmp edx, ebx
-    jl while_column_in_img_2
-    ;NEWLINE
-    dec ecx
-    jmp while_line_in_img_2
-after_while_line_in_img_2:
-    ;print result
-    push dword [img_height]
-    push dword [img_width]
-    push dword [img]
-    call print_image
-    add esp, 12
-    jmp done
-
-bruteforce_singlebyte_xor:
-    push ebp
-    mov ebp, esp
-    mov edi, [ebp + 8]
-    push edi
-    xor eax, eax
-    mov al, 1
-    ;iterate through all possible keys until finding "revient"
-while_key:
-    pop edi
-    push edi
-    mov ecx, 0
-    ;iterate through all pixels of the image
-while_line:
-        cmp ecx, [img_height]
-        je end_while_line
-        mov edx, 0
-        push edi
-while_column:
-            cmp edx, [img_width]
-            je end_while_column
-            xor byte[edi], al
-            movzx esi, byte[edi]
-            xor byte[edi], al
-            cmp esi, 'r'
-            push edi
-            call verify_revient
-            pop edi
-            cmp edx, -1
-            je end_while_key
-            add edi, 4
-            inc edx
-            jmp while_column
-end_while_column:
-        add esp, 4
-        inc ecx
-        jmp while_line
-end_while_line:
-    cmp al, 0xFF
-    je end_while_key
-    inc al
-    jmp while_key
-end_while_key:
-    pop edi
-    leave
-    ret
-    
-verify_revient:
-    push ebp
-    mov ebp, esp
-    mov edi, [ebp + 8]
-    add edi, 4
-    ;check if next letters after 'r' are 'evient'
-    xor byte [edi], al
-    movzx esi, byte [edi]
-    xor byte [edi], al
-    cmp esi, 'e'
-    jne leave_verify
-    add edi, 4
-    xor byte [edi], al
-    movzx esi, byte [edi]
-    xor byte [edi], al
-    cmp esi, 'v'
-    jne leave_verify
-    add edi, 4
-    xor byte [edi], al
-    movzx esi, byte [edi]
-    xor byte [edi], al
-    cmp esi, 'i'
-    jne leave_verify
-    add edi, 4
-    xor byte [edi], al
-    movzx esi, byte [edi]
-    xor byte [edi], al
-    cmp esi, 'e'
-    jne leave_verify
-    add edi, 4
-    xor byte [edi], al
-    movzx esi, byte [edi]
-    xor byte [edi], al
-    cmp esi, 'n'
-    jne leave_verify
-    add edi, 4
-    xor byte [edi], al
-    movzx esi, byte [edi]
-    xor byte [edi], al
-    cmp esi, 't'
-    jne leave_verify
-    mov edx, -1
-leave_verify:
-    leave
-    ret
+    jmp print_result
     
 write_A:
     push a
@@ -789,13 +619,14 @@ write_comma:
     add esp, 4
     jmp after_writing
     
+    ;encrypt character given to morse code
 encrypt_character:
     push ebp
     mov ebp, esp
     mov esi, [ebp + 8]
     ;write morse the code given as parameter to the image
 while_encrypt:
-    mov dl, byte[esi]
+    mov dl, byte [esi]
     cmp dl, 0
     je leave_encrypt_character
     mov byte [edi + eax * 4], dl
@@ -806,6 +637,23 @@ leave_encrypt_character:
     leave
     ret
     
+solve_task4:
+    mov ebx, [ebp + 12]
+    push DWORD[ebx + 16]
+    ;get index
+    call atoi
+    add esp, 4
+    ;get message
+    mov edx, [ebp + 12]
+    mov ebx, [edx + 12]
+    push eax
+    push ebx
+    push dword [img]
+    call lsb_encode
+    add esp, 12
+    jmp print_result
+    
+    ;lsb encode string
 lsb_encode:
     push ebp
     mov ebp, esp
@@ -823,7 +671,7 @@ lsb_encode:
     ;write each character to the image
 while_chars_in_esi:
     ;get byte value of current char
-    mov al, byte[esi]
+    mov al, byte [esi]
     ;write current char in LSB encryption
     call write_byte
     ;if current byte was \0 then leave loop
@@ -839,7 +687,7 @@ end_while_chars_in_esi:
 write_byte:
     push ebp
     mov ebp, esp
-    mov cl, 0
+    mov cl, 0   ;cl = 0 : 7
     push eax
 while_cl_not_8:
     pop eax
@@ -847,12 +695,12 @@ while_cl_not_8:
     cmp cl, 8
     je end_while_cl_not_8
     ;get the current bye in lsb position
-    mov bl, byte[esi]
+    mov bl, byte [esi]
     mov dl, al
     shl dl, cl
     shr dl, 7
     ;get img pixel
-    mov al, byte[edi]
+    mov al, byte [edi]
     cmp dl, 0
     jg dl_one
     ;dl is 0
@@ -873,6 +721,28 @@ end_while_cl_not_8:
     leave
     ret
     
+solve_task5:
+    mov ebx, [ebp + 12]
+    push DWORD[ebx + 12]
+    ;get index
+    call atoi
+    add esp, 4
+    ;get to index
+    mov esi, [img]
+    mov ebx, 4
+    mul ebx
+    add esi, eax
+    sub esi, 4
+    ;while not found '\0'
+while_bytes_to_decrypt:
+    call decrypt_byte
+    cmp al, 0   ;if \0 is found then break
+    je end_while_bytes_to_decrypt
+    PRINT_CHAR al
+    jmp while_bytes_to_decrypt
+end_while_bytes_to_decrypt:
+    jmp done
+    
     ;decrypts eight bytes into one byte (result in al)
 decrypt_byte:
     push ebp
@@ -883,7 +753,7 @@ decrypt_byte:
 while_not_8_bits:
     ;shift al left to make space for the next bit
     shl al, 1
-    mov dl, byte[esi]
+    mov dl, byte [esi]
     add esi, 4
     ;get only the lsb
     shl dl, 7
@@ -896,9 +766,99 @@ while_not_8_bits:
     leave
     ret
     
+solve_task6:
+    mov esi, [img]
+    mov ecx, 1  ;ecx = 1 : img_height - 1
+while_line_in_img:
+    mov eax, [img_width]
+    mul ecx
+    push ecx
+    mov ecx, 4
+    mul ecx
+    pop ecx
+    mov esi, [img]
+    add esi, eax    ;get index of current line, col 0
+    add esi, 4      ;current line, col 1
+    mov eax, [img_height]
+    dec eax
+    cmp ecx, eax
+    je after_while_line_in_img
+    mov edx, 2  ; edx = 2 : img_width
+while_column_in_img:
+    ;extend all values to 16 bit due to possible overflow
+    mov al, byte [esi]  ;get self
+    movzx ax, al
+    push edx    ;push index
+    mov edx, [img_width]
+    mov bl, byte [esi + edx * 4]    ;get down
+    movzx bx, bl
+    add ax, bx
+    neg edx
+    mov bl, byte [esi + edx * 4]    ;get up
+    movzx bx, bl
+    add ax, bx
+    mov bl, byte [esi - 4]  ;get left
+    movzx bx, bl
+    add ax, bx
+    mov bl, byte [esi + 4]  ;get right
+    movzx bx, bl
+    add ax, bx
+    mov bl, 5
+    div bl  ;get average
+    add esi, 4
+    pop edx ;pop index back
+    inc edx
+    push eax    ;push value
+    cmp edx, [img_width]
+    jl while_column_in_img
+    inc ecx
+    jmp while_line_in_img
+after_while_line_in_img:
+
+    ;write results from stack to img
+    mov ecx, [img_height]
+    sub ecx, 2  ;ecx = img_height - 2 : 0
+while_line_in_img_2:
+    mov eax, [img_width]
+    mul ecx
+    push ecx
+    mov ecx, 4
+    mul ecx
+    pop ecx
+    mov esi, [img]
+    add esi, eax    ;get to current line
+    mov ebx, [img_width]
+    mov eax, 4
+    mul ebx
+    add esi, eax    ;get to the first pixel from next line
+    sub esi, 8      ;get to second last pixel from current line
+    cmp ecx, 0
+    je after_while_line_in_img_2
+    mov edx, 2  ;edx = 2 : img_width
+while_column_in_img_2:
+    pop eax ;pop value pushed earlier
+    mov byte [esi], al  ;write to image
+    sub esi, 4
+    inc edx
+    mov ebx, [img_width]
+    cmp edx, ebx
+    jl while_column_in_img_2
+    dec ecx
+    jmp while_line_in_img_2
+after_while_line_in_img_2:
+    jmp print_result    ;useless action, but logical
+    
+    ;print result
+print_result:
+    push dword [img_height]
+    push dword [img_width]
+    push dword [img]
+    call print_image
+    add esp, 12
+    
     ; Free the memory allocated for the image.
 done:
-    push DWORD[img]
+    push dword [img]
     call free_image
     add esp, 4
 
